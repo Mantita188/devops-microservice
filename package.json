@@ -1,0 +1,28 @@
+{
+  "name": "devops-microservice",
+  "version": "1.0.0",
+  "description": "Microservicio base para pipeline CI/CD DevOps",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "test": "jest --detectOpenHandles --forceExit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mantita188/devops-microservice.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Mantita188/devops-microservice/issues"
+  },
+  "homepage": "https://github.com/Mantita188/devops-microservice#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "jest": "^30.5.1",
+    "supertest": "^7.2.2"
+  }
+}
