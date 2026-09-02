@@ -10,4 +10,13 @@ app.get('/', (req, res) => {
     version: '1.0.0'
   });
 });
+
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'UP',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+});
+
 module.exports = app;
