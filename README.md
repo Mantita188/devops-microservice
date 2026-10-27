@@ -46,30 +46,59 @@ git push -u origin <rama>
 # Para la fusión y la actualización
 git merge <rama-origen>
 ```
-## 3. Automatización CI/CD con GitHub Actions**
-### Workflow utilizado
+## 3. Automatización CI/CD con GitHub Actions
 
-El repositorio cuenta con un pipeline de Integración Continua (CI) configurado mediante GitHub Actions. El workflow se encuentra en `.github/workflows/ci.yml`.
+El workflow del proyecto se encuentra en .github/workflows/ci.yml. En esta segunda etapa lo modifiqué para incorporar más pasos al proceso de validación y despliegue del microservicio.
 
 ### Eventos que activan el pipeline
-El pipeline se ejecuta automáticamente en los siguientes casos:
 
-- Cada `push` realizado sobre la rama `develop`.
-- Cada Pull Request dirigido hacia la rama `main`.
+El pipeline se ejecuta cuando se realizan cambios mediante push en las ramas main, develop y feature/**. También se ejecuta al crear o actualizar Pull Requests dirigidos hacia main o develop.
 
 ### Proceso automatizado
 
-El pipeline ejecuta las siguientes etapas:
+El workflow realiza las siguientes tareas:
 
-1. **Checkout del repositorio:** obtiene el código fuente del repositorio.
-2. **Configuración de Node.js:** utiliza Node.js versión 20 y habilita la caché de npm.
-3. **Instalación de dependencias:** ejecuta `npm ci` utilizando el archivo `package-lock.json`.
-4. **Ejecución de pruebas:** ejecuta `npm test` para verificar el funcionamiento del proyecto.
+Obtiene el código del repositorio y configura Node.js versión 20.
 
-Si todas las etapas finalizan correctamente, GitHub Actions marca la ejecución como exitosa. En caso de que alguna etapa falle, el pipeline informa el error.
+Instala las dependencias mediante npm ci.
 
-## 4. Rol de GitHub Actions en CI/CD**
-En esta primera etapa del proyecto, el trabajo se centró exclusivamente en la fase de Integración Continua (CI). GitHub Actions opera como el motor de automatización encargado de validar la integridad del código antes de que cualquier cambio se integre a las ramas troncales.
+Ejecuta las pruebas unitarias con npm test.
+
+Revisa las vulnerabilidades de las dependencias mediante npm audit.
+
+Ejecuta el análisis de Snyk si se encuentra configurado el secreto necesario.
+
+Construye la imagen Docker del microservicio.
+
+Inicia el servicio utilizando Docker Compose.
+
+Comprueba que el endpoint /health responda correctamente.
+
+Muestra los registros del contenedor y limpia el entorno de pruebas.
+
+### 3.1. Revisión de dependencias y seguridad
+
+Para revisar las dependencias del proyecto utilicé npm audit, que permite identificar vulnerabilidades conocidas en los paquetes instalados. En la última ejecución local obtuve el resultado found 0 vulnerabilities.
+
+También agregué el archivo .github/dependabot.yml, que configura revisiones semanales para las dependencias de npm y las acciones de GitHub.
+
+El workflow incluye un paso para Snyk, pero para ejecutar ese análisis es necesario configurar el secreto SNYK_TOKEN en GitHub. Por lo tanto, la revisión con Snyk debe considerarse pendiente hasta comprobar que se haya ejecutado correctamente.
+
+Es importante distinguir el resultado de la auditoría local de las alertas que GitHub pueda mostrar en el repositorio.
+
+## 4. Rol de GitHub Actions en CI/CD
+
+GitHub Actions permite automatizar las tareas de integración continua y comprobar que el microservicio funcione correctamente antes de finalizar el proceso.
+
+En esta segunda etapa amplié el pipeline para que, además de ejecutar las pruebas unitarias y revisar las dependencias, construya la imagen Docker y levante el servicio mediante Docker Compose en un entorno de prueba.
+
+Integración continua (CI): valida el código mediante pruebas unitarias y revisiones de seguridad.
+
+Despliegue automatizado en entorno de prueba (CD): construye la imagen, inicia el contenedor y verifica que el endpoint /health responda correctamente.
+
+Validación del despliegue: si las pruebas, la auditoría o la comprobación del servicio fallan, el pipeline puede detenerse y registrar el error.
+
+Este proceso permite reducir tareas manuales y comprobar que los cambios puedan ejecutarse en un entorno contenerizado.
 
 ### Explicación del Rol en el Ciclo Completo CI/CD
 Aunque en el encargo actual no se incluye el Despliegue continuo (CD), dentro de la metodologia de DevOps ambas fases se complementan de la siguiente forma:
@@ -79,7 +108,7 @@ Aunque en el encargo actual no se incluye el Despliegue continuo (CD), dentro de
 
 Los beneficios tecnicos obtenidos son la trazabilidad total y la estandarizacion.
 
-## 5. Buenas prácticas del repositorio*
+## 5. Buenas prácticas del repositorio
 ###  Naming de ramas:
 main
 develop
@@ -126,21 +155,44 @@ Validación
 main
 
 ### Estructura de Directorios
-```text
-devops-microservice/
+```devops-microservice/
 ├── .github/
-│   └── workflows/
-│       └── ci.yml         
+│   ├── workflows/
+│   │   └── ci.yml
+│   └── dependabot.yml
 ├── src/
-│   └── app.js               
+│   └── app.js
 ├── test/
-│   └── app.test.js        
-├── .gitignore              
-├── package.json           
-├── package-lock.json       
-└── README.md               
+│   └── app.test.js
+├── .dockerignore
+├── .gitignore
+├── Dockerfile
+├── compose.yaml
+├── package.json
+├── package-lock.json
+└── README.md
+             
 ```
-## 6. Ejecución Local
+## 6. Contenerización con Docker
+
+En esta etapa trabajé en la contenerización del microservicio para poder ejecutarlo mediante Docker. Para esto creé un Dockerfile, donde se indican los pasos necesarios para construir la imagen de la aplicación.
+
+También utilicé Docker Compose para facilitar el inicio y la administración del contenedor. Se configuró el puerto 3000 para acceder al servicio y un healthcheck para comprobar si la aplicación se encuentra funcionando correctamente.
+
+Para probarlo utilicé los siguientes comandos:
+
+```bash
+docker compose build
+docker compose up -d
+docker compose ps
+```
+
+Para revisar el estado del servicio se puede consultar el endpoint `/health` desde el navegador, utilizando `http://localhost:3000/health`.
+
+Además, agregué el archivo `.dockerignore` para excluir archivos que no son necesarios al construir la imagen.
+
+
+## 7. Ejecución Local
 1. **Instalar dependencias:**
 ```bash
    npm install
@@ -160,11 +212,12 @@ npm
 Git
 ``` 
 
-## 7. Declaración de Uso Ético de Inteligencia Artificial
-* **Herramientas utilizadas:** Asistente de IA (Gemini) para la revision de redacción.
-* **Áreas de aplicación:** Apoyo en la formulación y redacción de la documentación técnica, estructuración de esquemas de ramificación y diseño inicial del pipeline de GitHub Actions.
-* **Validación del equipo:** Todo el código fuente, configuración del pipeline y pruebas unitarias fueron creados, validados y ejecutados manualmente en entorno local y probados dentro de la plataforma GitHub para garantizar el cumplimiento estricto de la rúbrica de evaluación.
+#### 8. Declaración de Uso Ético de Inteligencia Artificial
 
-## 8. Reflexion individual
+- **Herramientas utilizadas:** Gemini y ChatGPT como herramientas de apoyo.
+- **Áreas de aplicación:** apoyo en la revisión de redacción, la comprensión de conceptos técnicos y la orientación para configurar y documentar el pipeline de GitHub Actions y Docker.
+- **Validación:** los cambios se revisaron y probaron en el entorno local y en GitHub Actions. La documentación final debe reflejar las configuraciones implementadas y los resultados obtenidos durante las pruebas.
+
+## 9. Reflexion individual
 Durante el desarrollo de el encargo para el primer parcial, mi principal aporte tecnico se centro en la inicializacion de la arquitectura del microservicio y la puesta en marcha de el pipeline de CI mediante la utilizacion de GitHubs Actions. Trabaje en la configuracion de pruebas unitarias con Jest y Supertest, asegurando que cada componente que fuera incorporar tanto en el endpoint de diagnostico o en el /health como la logica de los productos contara con validaciones automaticas antes de integrarse a la rama develop.
 Realizar esta actividad me enseño a dimensionar el valor real de Gitflow en la nube. Anteriormente habia aprendido sobre Github y el uso de repositorios para diferentes actividades, pero ahora al simular el flujo completo con Pull Requests y un hotfix directo a produccion comprendi como esta estrategia de despliegue me ayudo a prevenir que errores de dessarrollo lleguen al usuario final. Asi tambien comprendi que todo lo aprendido con Github Actions, me demostro que automatizar las pruebas no es solo un extra, sino un requisito critico para garantizar la estabilidad del software en cualquier ciclo DevOps, nos ayuda a evitar los errores humanos y a la eliminacion de tareas manuales repetitivas al ejecutar pruebas. 
