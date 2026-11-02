@@ -2,20 +2,18 @@ const request = require('supertest');
 const app = require('../src/app');
 
 describe('GET /', () => {
-  it('debe responder con estado 200 y status online', async () => {
+  it('debe mostrar la página principal HTML con estado 200', async () => {
     const res = await request(app).get('/');
     expect(res.statusCode).toEqual(200);
-    expect(res.body).toHaveProperty('status', 'online');
+    expect(res.headers['content-type']).toContain('text/html');
   });
 });
 
-describe('GET /health', () => {
-  it('debe responder con estado 200 y status UP', async () => {
-    const res = await request(app).get('/health');
+describe('GET /api', () => {
+  it('debe responder con estado 200 y status online', async () => {
+    const res = await request(app).get('/api');
     expect(res.statusCode).toEqual(200);
-    expect(res.body).toHaveProperty('status', 'UP');
-    expect(res.body).toHaveProperty('environment', 'production');
-    expect(res.body).toHaveProperty('uptime');
+    expect(res.body).toHaveProperty('status', 'online');
   });
 });
 
