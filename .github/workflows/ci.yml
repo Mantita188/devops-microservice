@@ -26,8 +26,8 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Instalar dependencias
-        run: npm ci
+      - name: Instalar dependencias de forma segura
+        run: npm ci --ignore-scripts
 
       - name: Ejecutar pruebas unitarias
         run: npm test
