@@ -1,246 +1,182 @@
-devops-microservice
+# DevOps Microservice
 
-Descripción
+## Descripción
 
-Se crea un microservicio REST desarrollado en Node.js y Express para el optativo Ingeniería en DevOps. En esta segunda etapa se incorporó la contenerización mediante Docker, la orquestación con Docker Compose, las verificaciones automatizadas mediante pruebas unitarias con Jest y Supertest, y un pipeline de integración continua y despliegue en un entorno de prueba (CI/CD) configurado en GitHub Actions.
+Microservicio REST desarrollado con Node.js y Express para la asignatura de Ingeniería en DevOps.
 
-El objetivo es automatizar la validación del microservicio, revisar las dependencias y comprobar que la aplicación pueda construirse y ejecutarse correctamente en un entorno contenerizado.
+En esta segunda etapa se incorporaron Docker y Docker Compose para la contenerización y orquestación del servicio, pruebas automatizadas con Jest y Supertest, análisis de seguridad y automatización CI/CD mediante GitHub Actions.
 
-1. Estrategia de ramificación
+El proyecto también cuenta con una interfaz web sencilla para visualizar el estado del microservicio y consultar sus funcionalidades principales.
 
-Para la gestión del código fuente en entornos cloud se evaluaron diferentes estrategias de control de versiones, como las siguientes:
+El objetivo es automatizar la validación del código, revisar sus dependencias, construir una imagen Docker y comprobar que la aplicación pueda ejecutarse correctamente en un entorno contenerizado.
 
-Trunk-Based Development: todos los desarrolladores integran sus cambios de código en una rama central, conocida como main, de forma frecuente.
+## 1. Arquitectura y funcionalidades
 
-GitHub Flow: flujo de trabajo ligero basado en ramas cortas que facilitan la integración de cambios mediante Pull Requests hacia la rama principal.
+El proyecto utiliza Node.js y Express para implementar un microservicio que dispone de los siguientes endpoints:
 
-GitFlow: modelo clásico y estructurado, con ramas como main, develop, feature y hotfix, diseñado para organizar el desarrollo y las versiones del proyecto.
+| Endpoint | Método | Descripción |
+|---|---|---|
+| `/` | GET | Muestra la interfaz web principal. |
+| `/api` | GET | Entrega información del estado del servicio. |
+| `/health` | GET | Comprueba la salud del microservicio. |
+| `/products` | GET | Obtiene la lista de productos. |
+| `/products` | POST | Registra un producto y valida los datos recibidos. |
 
-Uso de GitFlow en este proyecto
+La interfaz web se encuentra en `src/index.html` y permite visualizar el servicio desde el navegador.
 
-Elegí utilizar GitFlow porque me permitió separar el desarrollo de las versiones estables del proyecto. En mi proyecto utilicé las ramas develop (integración de cambios nuevos antes de incorporarlos a main), main (código estable) y feature/* (desarrollo de funcionalidades de forma independiente).
+## 2. Estrategia de ramificación
 
-Además, la utilización de hotfix me permitió abordar errores críticos de forma controlada, evitando afectar los cambios que se encontraban en desarrollo. Esto permitió mantener la estructura de trabajo organizada y facilitó la trazabilidad de los cambios mediante los Pull Requests.
+Para gestionar el código fuente se evaluaron diferentes estrategias de control de versiones:
 
-Asimismo, utilizar GitFlow me permitió simular un equipo de trabajo, ya que cada funcionalidad se manejó mediante ramas y Pull Requests, reproduciendo un flujo colaborativo.
+- **Trunk-Based Development:** integración frecuente de cambios en una rama principal.
+- **GitHub Flow:** flujo basado en ramas cortas y Pull Requests.
+- **GitFlow:** modelo que utiliza ramas como `main`, `develop`, `feature` y `hotfix`.
 
-2. Trazabilidad del flujo colaborativo
+Se utilizó GitFlow porque permitió separar el desarrollo de las versiones estables del proyecto.
 
-Se imitó el ciclo de vida colaborativo registrando cada etapa a través de los Pull Requests y comandos de Git.
+Las principales ramas utilizadas fueron:
 
-Ramas y funcionalidades integradas
+- `main`: código estable del proyecto.
+- `develop`: integración de nuevas funcionalidades.
+- `feature/*`: desarrollo de funcionalidades independientes.
+- `hotfix/*`: corrección de errores importantes.
 
-Rama develop: rama destinada a integrar los cambios de las funcionalidades antes de su incorporación a main.
+La integración se realizó mediante Pull Requests, simulando un entorno de trabajo colaborativo.
 
-Feature 1 (feature/health-endpoint): se implementó el endpoint GET /health para el monitoreo del estado del servicio, acompañado de sus correspondientes pruebas unitarias (PR #1 hacia develop).
+## 3. Trazabilidad del desarrollo
 
-Feature 2 (feature/products-endpoint): se utilizó para incorporar operaciones CRUD en memoria para la entidad productos, incluyendo GET /products y POST /products, junto con la validación de datos y pruebas (PR #2 hacia develop).
+Durante el desarrollo se registraron los cambios mediante commits, ramas y Pull Requests.
 
-Release v1.0.0: se utilizó para integrar el código consolidado de develop hacia main (PR #3 hacia main).
+Entre las principales funcionalidades incorporadas se encuentran:
 
-Hotfix (hotfix/health-response): corrección del endpoint de salud que incluyó el atributo environment: 'production' en la respuesta de monitoreo (PR #4 hacia main).
+- `feature/health-endpoint`: implementación del endpoint GET `/health` y sus pruebas.
+- `feature/products-endpoint`: implementación de GET y POST `/products`, con validaciones y pruebas.
+- `hotfix/health-response`: incorporación del atributo `environment: production` en la respuesta de salud.
+- `feature/ep2-docker`: incorporación de Docker, Docker Compose y mejoras al pipeline CI/CD.
 
-Feature de Docker y CI/CD (feature/ep2-docker): se incorporó la contenerización del microservicio, Docker Compose, el análisis de seguridad y las mejoras al pipeline de GitHub Actions (PR #5).
+También se utilizaron versiones etiquetadas para identificar las entregas del proyecto.
 
-Comandos Git utilizados
+Esta organización permite mantener un historial de cambios y relacionar las modificaciones del código con sus respectivas versiones.
 
-# Para clonar y sincronizar el repositorio
-git clone <url-repositorio>
-git pull origin <rama>
+## 4. Automatización CI/CD con GitHub Actions
 
-# Para la gestión de ramas
-git checkout -b <nueva-rama>
-git switch <rama-existente>
-git branch -a
+El proyecto utiliza dos workflows ubicados en `.github/workflows/`.
+### 4.1. Pipeline de integración continua y despliegue de prueba
 
-# Para el registro y publicación de los cambios
-git status
-git add .
-git commit -m "<tipo>(<alcance>): <descripcion>"
-git push -u origin <rama>
+El archivo `ci.yml` configura un pipeline que se ejecuta cuando se realizan cambios mediante `push` en las ramas `main`, `develop` y `feature/**`. También se ejecuta al crear o actualizar Pull Requests dirigidos hacia `main` o `develop`.
 
-# Para la fusión y actualización
-git merge <rama-origen>
+El pipeline realiza las siguientes tareas:
 
-3. Automatización CI/CD con GitHub Actions
+1. Obtiene el código del repositorio.
+2. Configura Node.js versión 20.
+3. Instala las dependencias mediante `npm ci --ignore-scripts`.
+4. Ejecuta las pruebas automatizadas mediante `npm test`.
+5. Revisa vulnerabilidades con `npm audit --audit-level=high`.
+6. Ejecuta el análisis de seguridad con Snyk cuando está configurado el secreto `SNYK_TOKEN`.
+7. Construye la imagen mediante `docker compose build`.
+8. Inicia el servicio mediante `docker compose up -d`.
+9. Comprueba que el endpoint `/health` responda correctamente.
+10. Muestra el estado de los contenedores y limpia el entorno de prueba mediante `docker compose down`.
 
-El workflow del proyecto se encuentra en .github/workflows/ci.yml. En esta segunda etapa lo modifiqué para incorporar más pasos al proceso de validación y despliegue del microservicio.
+Si las pruebas, las verificaciones configuradas o la comprobación de salud fallan, el pipeline registra el error y la ejecución no finaliza correctamente.
 
-Eventos que activan el pipeline
+### 4.2. Publicación de versiones e imágenes Docker
 
-El pipeline se ejecuta cuando se realizan cambios mediante push en las ramas main, develop y feature/**. También se ejecuta al crear o actualizar Pull Requests dirigidos hacia main o develop.
+El archivo `release.yml` automatiza la publicación de versiones cuando se genera una etiqueta Git cuyo nombre comienza con `v`.
 
-Proceso automatizado
+Este workflow realiza las siguientes tareas:
 
-El workflow realiza las siguientes tareas:
+1. Obtiene el código del repositorio.
+2. Configura Docker Buildx.
+3. Inicia sesión en GitHub Container Registry (GHCR).
+4. Prepara las etiquetas de la imagen Docker.
+5. Construye y publica la imagen.
+6. Crea una GitHub Release con notas de publicación.
 
-Obtiene el código del repositorio mediante actions/checkout.
+La imagen se publica en:
 
-Configura Node.js versión 20.
+`ghcr.io/mantita188/devops-microservice`
 
-Instala las dependencias mediante npm ci.
+Se utilizan etiquetas asociadas a la versión y la etiqueta `latest`.
 
-Ejecuta las pruebas unitarias con npm test.
+Las acciones externas utilizadas en este workflow están fijadas mediante identificadores SHA para mantener un mayor control sobre las versiones ejecutadas.
 
-Revisa las vulnerabilidades de las dependencias mediante npm audit --audit-level=high.
+### 4.3. Diferencia entre ambos workflows
 
-Ejecuta el análisis de seguridad con Snyk si se encuentra configurado el secreto SNYK_TOKEN.
+El workflow `ci.yml` comprueba que los cambios puedan probarse, construirse y ejecutarse correctamente en un entorno de prueba.
 
-Construye la imagen Docker mediante docker compose build.
+Por otro lado, `release.yml` permite publicar una versión identificada y distribuir su imagen Docker mediante GHCR.
 
-Inicia el servicio utilizando docker compose up -d.
+De esta manera se mantiene la trazabilidad entre el código fuente, las versiones publicadas y las imágenes generadas.
 
-Comprueba que el endpoint /health responda correctamente.
+## 5. Seguridad y revisión de dependencias
 
-Muestra el estado de los contenedores y los registros en caso de ser necesario.
+Se incorporaron distintas herramientas para revisar la seguridad del proyecto.
 
-Limpia el entorno de pruebas mediante docker compose down.
+### npm audit
 
-Si las pruebas unitarias fallan, el paso devuelve un error y el pipeline no continúa normalmente hacia las siguientes etapas. Lo mismo ocurre si falla la auditoría configurada, el análisis de Snyk cuando está habilitado o la comprobación de salud del microservicio.
+Permite identificar vulnerabilidades conocidas en las dependencias de Node.js.
 
-3.1. Revisión de dependencias y seguridad
+Se utiliza el comando:
 
-Para revisar las dependencias del proyecto utilicé npm audit, que permite identificar vulnerabilidades conocidas en los paquetes instalados. En una de las ejecuciones locales obtuve el resultado found 0 vulnerabilities.
+`npm audit --audit-level=high`
 
-También agregué el archivo .github/dependabot.yml, que configura revisiones semanales para las dependencias de npm y las acciones de GitHub. Esto permite mantener un seguimiento de las actualizaciones disponibles y recibir propuestas de actualización cuando corresponda.
+El pipeline falla cuando se detectan vulnerabilidades que alcanzan el nivel de severidad configurado.
 
-Además, incorporé Snyk al pipeline para realizar un análisis de seguridad de las dependencias. Para esto configuré el secreto SNYK_TOKEN en GitHub Actions, de manera que el token no quede escrito directamente en el código del repositorio.
+### Snyk
 
-En una de las ejecuciones, Snyk analizó 66 dependencias y mostró el resultado no vulnerable paths found, sin encontrar rutas vulnerables conocidas en ese análisis.
+Se incorporó Snyk al pipeline para realizar análisis de seguridad de las dependencias.
 
-El comando utilizado incluye el parámetro --severity-threshold=high, por lo que el paso falla si Snyk detecta vulnerabilidades que alcanzan ese nivel de severidad. Si el secreto SNYK_TOKEN no está configurado, el workflow muestra una advertencia y omite el análisis de Snyk.
+Se utiliza el secreto `SNYK_TOKEN` de GitHub Actions, evitando almacenar el token directamente en el repositorio.
 
-Es importante distinguir entre los resultados de npm audit, Snyk y las alertas de Dependabot, ya que cada herramienta tiene un funcionamiento diferente. Estos resultados corresponden a las ejecuciones realizadas y no garantizan la ausencia absoluta de vulnerabilidades.
+El análisis se ejecuta con el parámetro `--severity-threshold=high`. Si el secreto no está configurado, el pipeline muestra una advertencia y omite este paso.
 
-4. Rol de GitHub Actions en CI/CD
+En una ejecución documentada anteriormente, Snyk analizó 66 dependencias y no encontró rutas vulnerables conocidas.
 
-GitHub Actions permite automatizar las tareas de integración continua y comprobar que el microservicio funcione correctamente antes de finalizar el proceso.
+### Dependabot
 
-En esta segunda etapa amplié el pipeline para que, además de ejecutar las pruebas unitarias y revisar las dependencias, construya la imagen Docker y levante el servicio mediante Docker Compose en un entorno de prueba.
+El archivo `.github/dependabot.yml` configura revisiones semanales para:
 
-Integración continua (CI)
+- Dependencias de npm.
+- Acciones de GitHub Actions.
 
-La integración continua permite validar los cambios del código mediante pruebas unitarias y revisiones de seguridad. Esto ayuda a detectar errores antes de continuar con el proceso.
+Esto permite recibir propuestas de actualización cuando existen nuevas versiones disponibles.
 
-Despliegue automatizado en entorno de prueba (CD)
+### SonarQube Cloud
 
-El despliegue automatizado de esta implementación construye la imagen Docker, inicia el contenedor mediante Docker Compose y verifica que el endpoint /health responda correctamente.
+El repositorio está vinculado a SonarQube Cloud para analizar la calidad y seguridad del código fuente.
 
-Validación del despliegue
+El análisis permite identificar problemas de seguridad, mantenibilidad y confiabilidad.
 
-El pipeline comprueba que el servicio pueda ejecutarse y responder correctamente. Si las pruebas, los análisis de seguridad configurados o la verificación del servicio fallan, el flujo puede detenerse y registrar el error en GitHub Actions.
+En el último análisis revisado, el Quality Gate obtuvo el resultado **Passed**.
 
-Este proceso permite reducir tareas manuales, mejorar la trazabilidad y comprobar que los cambios puedan ejecutarse en un entorno contenerizado. El despliegue implementado corresponde a un entorno de prueba y no a un despliegue productivo en la nube.
+Los resultados de estas herramientas corresponden a sus respectivas ejecuciones y no garantizan la ausencia absoluta de vulnerabilidades.
 
-5. Buenas prácticas del repositorio
+## 6. Contenerización con Docker
 
-Naming de ramas
+Para contenerizar el microservicio se incorporó un archivo `Dockerfile`.
 
-main
+La imagen utiliza Node.js 20 sobre Alpine Linux como base y configura el entorno de producción.
 
-develop
+Entre sus características se encuentran:
 
-feature/health-endpoint
+- Instalación de dependencias de producción mediante `npm ci --omit=dev`.
+- Limpieza de la caché de npm.
+- Copia de los archivos necesarios de la aplicación.
+- Ejecución mediante el usuario no privilegiado `node`.
+- Exposición del puerto 3000.
 
-feature/products-endpoint
+También se creó `.dockerignore` para excluir archivos innecesarios durante la construcción de la imagen.
 
-hotfix/health-response
+### Docker Compose
 
-feature/ep2-docker
+El archivo `compose.yaml` permite administrar la ejecución del microservicio.
 
-Convención de commits
+Configura el puerto 3000, las variables de entorno, la política de reinicio y un healthcheck que consulta el endpoint `/health`.
 
-Se utilizó el siguiente formato estándar:
+Comandos utilizados:
 
-<tipo>(<alcance>): <descripcion>
-
-feat: nueva funcionalidad para el usuario o API.
-
-fix: corrección de un defecto o error.
-
-chore: mantenimiento, dependencias o configuración.
-
-test: adición o modificación de pruebas unitarias.
-
-docs: modificación o creación de documentación.
-
-Ejemplos:
-
-feat(health): agregar endpoint /health y tests unitarios
-
-fix: parche critico en endpoint /health
-
-docs: actualizar documentación de Docker y CI/CD
-
-Control de versiones
-
-El control de versiones del proyecto se realizó utilizando Git como sistema de control de versiones y GitHub como repositorio remoto.
-
-Cada cambio realizado durante la evaluación fue registrado mediante commits, permitiendo mantener un historial de modificaciones y conocer qué cambios fueron incorporados en las etapas del desarrollo.
-
-GitFlow me permitió mantener separados los cambios de desarrollo de la versión estable. Las nuevas funcionalidades se desarrollaron mediante ramas feature/*, mientras que los errores críticos se abordaron mediante ramas hotfix/*.
-
-La integración de los cambios se realizó mediante Pull Requests, permitiendo revisar y validar las modificaciones antes de incorporarlas a develop o main, según correspondiera.
-
-Estrategia de revisión
-
-Se simuló el flujo colaborativo mediante Pull Requests y validaciones automatizadas.
-
-Feature
-   ↓
-Pull Request
-   ↓
-GitHub Actions
-   ↓
-Revisión y validación
-   ↓
-Merge
-   ↓
-develop
-
-Posteriormente, los cambios consolidados se integran a la rama principal mediante el flujo correspondiente:
-
-develop
-   ↓
-Pull Request
-   ↓
-GitHub Actions
-   ↓
-Validación
-   ↓
-main
-
-Estructura de directorios
-
-devops-microservice/
-├── .github/
-│   ├── workflows/
-│   │   └── ci.yml
-│   └── dependabot.yml
-├── src/
-│   └── app.js
-├── test/
-│   └── app.test.js
-├── .dockerignore
-├── .gitignore
-├── Dockerfile
-├── compose.yaml
-├── package.json
-├── package-lock.json
-└── README.md
-
-6. Contenerización con Docker
-
-En esta etapa trabajé en la contenerización del microservicio para poder ejecutarlo mediante Docker. Para esto creé un Dockerfile, donde se indican los pasos necesarios para construir la imagen de la aplicación.
-
-El Dockerfile utiliza Node.js 20 sobre Alpine Linux como imagen base, establece el directorio de trabajo, copia los archivos necesarios e instala las dependencias de producción mediante npm ci --omit=dev.
-
-Además, la aplicación se ejecuta utilizando el usuario node, evitando ejecutarla como administrador dentro del contenedor. Finalmente, se define el puerto 3000 y el comando que inicia el servicio.
-
-También utilicé Docker Compose para facilitar el inicio y la administración del contenedor. En el archivo compose.yaml se configura el servicio, el puerto 3000 y un healthcheck para comprobar si la aplicación se encuentra funcionando correctamente.
-
-Para probarlo utilicé los siguientes comandos:
-
+```bash
 # Construir la imagen
 docker compose build
 
@@ -250,86 +186,138 @@ docker compose up -d
 # Revisar el estado del contenedor
 docker compose ps
 
-# Revisar los registros del servicio
+# Revisar los registros
 docker compose logs api
 
 # Detener y limpiar el entorno
 docker compose down
+```
 
-Para revisar el estado del servicio se puede consultar el endpoint /health desde el navegador, utilizando:
+Para comprobar el estado del servicio se puede acceder a:
 
-http://localhost:3000/health
+`http://localhost:3000/health`
 
-También es posible realizar la comprobación desde PowerShell:
+También se puede consultar desde PowerShell:
 
+```powershell
 Invoke-RestMethod http://localhost:3000/health
+```
 
-En las pruebas locales realizadas, el servicio respondió con el estado UP y el entorno production.
+Durante las pruebas locales el contenedor alcanzó el estado `healthy`.
 
-Además, agregué el archivo .dockerignore para excluir archivos que no son necesarios al construir la imagen, evitando copiar contenido innecesario al contexto de construcción.
+## 7. Pruebas automatizadas
 
-7. Ejecución local
+Se utiliza Jest junto con Supertest para verificar el funcionamiento de los endpoints del microservicio.
 
-Requisitos
+Las pruebas comprueban:
 
-Node.js 20.
+- Respuesta correcta de la página principal.
+- Respuesta del endpoint `/api`.
+- Obtención de productos.
+- Registro de productos.
+- Validación de solicitudes incompletas.
 
-npm.
+Para ejecutarlas localmente:
 
-Git.
+```bash
+npm test
+```
 
-Docker y Docker Compose para ejecutar la versión contenerizada.
+En la última ejecución local documentada se obtuvieron **5 pruebas aprobadas de 5**.
 
-Pasos para ejecutar el proyecto
+## 8. Ejecución local
 
-1. Clonar el repositorio
+### Requisitos
 
+- Node.js 20.
+- npm.
+- Git.
+- Docker y Docker Compose.
+
+### Instalación
+
+Clonar el repositorio:
+
+```bash
 git clone https://github.com/Mantita188/devops-microservice.git
 cd devops-microservice
+```
 
-2. Instalar las dependencias
+Instalar dependencias:
 
+```bash
 npm install
+```
 
-3. Ejecutar las pruebas unitarias
+Ejecutar pruebas:
 
+```bash
 npm test
+```
 
-4. Iniciar el servicio directamente con Node.js
+Iniciar directamente con Node.js:
 
+```bash
 npm start
+```
 
-5. Construir y ejecutar el servicio con Docker Compose
+Ejecutar mediante Docker Compose:
 
+```bash
 docker compose build
 docker compose up -d
+```
 
-6. Comprobar el estado del servicio
+La aplicación estará disponible en:
 
-docker compose ps
+`http://localhost:3000`
 
-También se puede consultar el endpoint:
+Para detener el entorno:
 
-http://localhost:3000/health
-
-7. Detener el entorno contenerizado
-
+```bash
 docker compose down
+```
 
-8. Declaración de uso ético de inteligencia artificial
+## 9. Estructura del repositorio
 
-Herramientas utilizadas: Gemini y ChatGPT como herramientas de apoyo.
+```text
+devops-microservice/
+├── .github/
+│   ├── workflows/
+│   │   ├── ci.yml
+│   │   └── release.yml
+│   └── dependabot.yml
+├── src/
+│   ├── app.js
+│   ├── index.html
+│   └── server.js
+├── test/
+│   └── app.test.js
+├── .dockerignore
+├── .gitignore
+├── Dockerfile
+├── compose.yaml
+├── package.json
+├── package-lock.json
+└── README.md
+```
 
-Áreas de aplicación: apoyo en la revisión de redacción, la comprensión de conceptos técnicos y la orientación para configurar y documentar el pipeline de GitHub Actions y Docker.
+## 10. Uso ético de inteligencia artificial
 
-Validación: los cambios se revisaron y probaron en el entorno local y en GitHub Actions. La documentación final debe reflejar las configuraciones implementadas y los resultados obtenidos durante las pruebas.
+Herramientas utilizadas: ChatGPT y Gemini.
 
-9. Reflexión individual
+Se utilizaron como apoyo para comprender conceptos técnicos, resolver dudas durante la implementación, revisar configuraciones y orientar la documentación del proyecto.
 
-Esta sección debe ser revisada y redactada con mi propia experiencia de aprendizaje.
+Los cambios fueron revisados y probados en el entorno local y mediante GitHub Actions. La responsabilidad sobre las decisiones, implementación y validación del proyecto corresponde a su autora.
 
-Durante el desarrollo de este encargo, mi principal aporte técnico se centró en las tareas que realicé para implementar y mejorar el microservicio, sus pruebas automatizadas y el pipeline de GitHub Actions.
+## 11. Reflexión individual
 
-Trabajar con esta evaluación me permitió profundizar en el uso de GitFlow, la contenerización mediante Docker, la ejecución del servicio con Docker Compose y la incorporación de controles de seguridad en el pipeline.
+Durante el desarrollo de esta evaluación me sentí desafiada, pero también disfruté bastante el proceso de aprendizaje. Algunas herramientas eran nuevas para mí y tuve que dedicar tiempo a entender cómo funcionaban y cómo se relacionaban entre sí. Especialmente con Docker y Docker Compose, pude comprender mejor cómo funcionan los contenedores y qué ventajas tienen al momento de ejecutar una aplicación.
 
-También comprendí la importancia de automatizar las pruebas y verificar que el servicio responda correctamente antes de finalizar el proceso. Estas tareas permiten detectar errores de forma temprana, reducir la ejecución manual de pasos repetitivos y mejorar la trazabilidad de los cambios.
+Uno de los aspectos que más me interesó fue trabajar con GitHub Actions y configurar el pipeline para automatizar las pruebas, las revisiones de seguridad y la ejecución del microservicio. Al principio no tenía completamente claro cómo se conectaban todos estos procesos, pero a medida que fui avanzando logré entender mejor su funcionamiento.
+
+También hubo momentos en los que aparecieron errores y tuve que revisar las configuraciones para encontrar soluciones. Esto me permitió aprender de una manera más práctica, porque no solamente se trataba de conseguir que el proyecto funcionara, sino también de entender qué estaba haciendo y por qué era necesario.
+
+De lo que más orgullosa me siento es de haber conseguido que el pipeline funcionara correctamente, ya que fue una de las partes que más trabajo me tomó. Ver que las pruebas se ejecutaban correctamente y que el proceso terminaba sin errores fue muy satisfactorio.
+
+En general, esta evaluación me permitió acercarme más al trabajo con herramientas DevOps y comprender mejor cómo se pueden integrar distintas tecnologías para automatizar procesos. Sé que todavía tengo mucho por aprender, pero considero que terminé con más conocimientos y confianza para enfrentar nuevos desafíos en esta área.
